@@ -26,7 +26,7 @@ In the folder:
 
 report_splitter ignores any command-line parameters or flags except its designated configuration file path.
 
-If running report_splitter without designating configuration file path, default `config.toml` under same directory would applies to executable.
+If running report_splitter without designating configuration file path, default `config.toml` under same directory would apply to executable.
 
 ### configuration
 
