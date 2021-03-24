@@ -1,12 +1,12 @@
-InFolder = "../in/system_reports/"
+InFolder = "./data/system_reports/"
 WalkSubFolders = false
 
 [Trim]
 Columns = ["School", "YrLevel", "Domain"]
 Enabled = true
-OutFolder = "../out/"
+OutFolder = "./out/"
 
 [Splitting]
 Enabled = true
-OutFolder = "../out/"
+OutFolder = "./out/"
 Schema = ["School", "YrLevel", "Domain"]
