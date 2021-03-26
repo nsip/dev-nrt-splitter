@@ -38,13 +38,13 @@ WalkSubFolders = false  # (bool), if true, splitter process every file including
 
 [Trim]
 Enabled = true                            # (bool), turn on/off Trim function.
-Columns = ["School", "Yrlevel", "Domain"] # (string array), which columns to be removed from original csv file.
+Columns = ["School", "YrLevel", "Domain"] # (string array), which columns to be removed from original csv file.
 OutFolder = "./out/"                      # (string), in which folder trimmed csv files should be output.
 
 [Splitting]
 Enabled = true                            # (bool), turn on/off Splitting function.
 OutFolder = "./out/"                      # (string), in which folder split results should be output.
-Schema = ["School", "Yrlevel", "Domain"]  # (string array), header sequence for splitting. Each header creates its split category folder. 
+Schema = ["School", "YrLevel", "Domain"]  # (string array), header sequence for splitting. Each header creates its split category folder. 
 ```
 
 ### play with sample
