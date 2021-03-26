@@ -1,6 +1,6 @@
 # dev-nrt-splitter
 
-NRT-Splitter is a command-line utility that does post-processes for csv reports. It walks through a designated folder to deal with each valid csv files, and ignores any other file type.
+NRT-Splitter is a command-line utility that does post-processes for csv reports. It walks through a designated folder to deal with each valid `csv` files, and ignores any other file type.
 
 ## basic usage
 
@@ -28,7 +28,7 @@ report_splitter ignores any command-line parameters or flags except its designat
 
 If running report_splitter without designating configuration file path, default `config.toml` under same directory would apply to executable.
 
-### configuration
+## configuration
 
 ```toml
 # This is a sample configuration.
@@ -47,7 +47,7 @@ OutFolder = "./out/"                      # (string), in which folder split resu
 Schema = ["School", "YrLevel", "Domain"]  # (string array), header sequence for splitting. Each header creates its split category folder. 
 ```
 
-### play with sample
+## play with sample
 
 1. Under `/NRT-Splitter-Linux-v0_0_1`, unpack sample package, `unzip ./data/system_reports.zip -d ./in/`.
 2. Modify `config.toml`, set `InFolder` value to `"./in/"`.

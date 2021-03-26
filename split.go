@@ -30,7 +30,7 @@ func NrtSplit(configurations ...string) error {
 
 	cfg := config.GetConfig(configurations...)
 	// fmt.Println(cfg.InFolder)
-	inDirAbs, err := filepath.Abs(cfg.InFolder)
+	inFolderAbs, err := filepath.Abs(cfg.InFolder)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func NrtSplit(configurations ...string) error {
 		uip = uiprogress.New()
 		defer uip.Stop()
 		uip.Start()
-		cnt, _, err := gio.FileDirCount(inDirAbs, true)
+		cnt, _, err := gio.FileDirCount(inFolderAbs, cfg.WalkSubFolders)
 		if err != nil {
 			return err
 		}
@@ -48,7 +48,7 @@ func NrtSplit(configurations ...string) error {
 		bar.AppendCompleted().PrependElapsed()
 	}
 
-	err = filepath.Walk(cfg.InFolder, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(inFolderAbs, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Fatalf("Error [%v] at a path [%q], Check your config.toml [InFolder] \n", err, path)
 			return err
@@ -61,6 +61,13 @@ func NrtSplit(configurations ...string) error {
 			fExt = filepath.Ext(path)
 		)
 
+		//
+		fPath, err = filepath.Abs(fPath)
+		if err != nil {
+			return err
+		}
+		tailPath := fPath[len(inFolderAbs):]
+
 		if info.IsDir() || fExt != ".csv" {
 			return nil
 		}
@@ -68,14 +75,12 @@ func NrtSplit(configurations ...string) error {
 		if !cfg.WalkSubFolders {
 			fDirAbs, err := filepath.Abs(fDir)
 			if err != nil {
-				log.Fatalf("Error when walk through abs %s", cfg.InFolder)
+				log.Fatalf("Error when walk through abs %s", inFolderAbs)
 			}
-			if inDirAbs != fDirAbs {
+			if inFolderAbs != fDirAbs {
 				return nil
 			}
 		}
-
-		tailPath := fPath[len(cfg.InFolder):]
 
 		if cfg.Trim.Enabled {
 			// fmt.Printf("Trim Processing...: %v\n", fPath)
@@ -101,7 +106,7 @@ func NrtSplit(configurations ...string) error {
 	})
 
 	if err != nil {
-		log.Fatalf("error walking the path %q: %v\n", cfg.InFolder, err)
+		log.Fatalf("error walking the path %q: %v\n", inFolderAbs, err)
 	}
 
 	return err

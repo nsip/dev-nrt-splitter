@@ -4,9 +4,9 @@ WalkSubFolders = true
 [Trim]
 Columns = ["School", "YrLevel", "Domain"]
 Enabled = true
-OutFolder = "./out/"
+OutFolder = "./out_trim/"
 
 [Splitting]
 Enabled = true
-OutFolder = "./out/"
+OutFolder = "./out_split/"
 Schema = ["School", "YrLevel", "Domain"]
