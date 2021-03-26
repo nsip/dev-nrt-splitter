@@ -1,5 +1,5 @@
-InFolder = "./data/system_reports/"
-WalkSubFolders = false
+InFolder = "./data/"
+WalkSubFolders = true
 
 [Trim]
 Columns = ["School", "YrLevel", "Domain"]

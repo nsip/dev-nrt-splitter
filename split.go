@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 
 	csvtool "github.com/cdutwhu/csv-tool"
@@ -56,8 +57,8 @@ func NrtSplit(configurations ...string) error {
 		var (
 			fPath = path
 			fDir  = filepath.Dir(path) + "/"
-			fName = info.Name()
-			fExt  = filepath.Ext(path)
+			// fName = info.Name()
+			fExt = filepath.Ext(path)
 		)
 
 		if info.IsDir() || fExt != ".csv" {
@@ -74,14 +75,18 @@ func NrtSplit(configurations ...string) error {
 			}
 		}
 
+		tailPath := fPath[len(cfg.InFolder):]
+		outFile := cfg.Splitting.OutFolder + tailPath
+
 		if cfg.Trim.Enabled {
 			// fmt.Printf("Trim Processing...: %v\n", fPath)
-			csvtool.Query(fPath, false, cfg.Trim.Columns, '&', nil, cfg.Trim.OutFolder+fName, nil)
+			csvtool.Query(fPath, false, cfg.Trim.Columns, '&', nil, outFile, nil)
 		}
 
 		if cfg.Splitting.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", fPath)
-			csvtool.Split(fPath, cfg.Splitting.OutFolder, false, cfg.Splitting.Schema...)
+			outFolder := outFile[:strings.LastIndex(outFile, "/")]
+			csvtool.Split(fPath, outFolder, false, cfg.Splitting.Schema...)
 		}
 
 		// -- progress bar 2 -- //
