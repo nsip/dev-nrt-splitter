@@ -82,17 +82,18 @@ func NrtSplit(configurations ...string) error {
 			}
 		}
 
-		if cfg.Trim.Enabled {
-			// fmt.Printf("Trim Processing...: %v\n", fPath)
-			outFile := cfg.Trim.OutFolder + tailPath
-			csvtool.Query(fPath, false, cfg.Trim.Columns, '&', nil, outFile, nil)
-		}
-
+		// Splitting first
 		if cfg.Splitting.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", fPath)
 			outFile := cfg.Splitting.OutFolder + tailPath
 			outFolder := outFile[:strings.LastIndex(outFile, "/")]
 			csvtool.Split(fPath, outFolder, false, cfg.Splitting.Schema...)
+		}
+
+		if cfg.Trim.Enabled {
+			// fmt.Printf("Trim Processing...: %v\n", fPath)
+			outFile := cfg.Trim.OutFolder + tailPath
+			csvtool.Query(fPath, false, cfg.Trim.Columns, '&', nil, outFile, nil)
 		}
 
 		// -- progress bar 2 -- //
