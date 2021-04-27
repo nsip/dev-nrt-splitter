@@ -2,6 +2,7 @@
 
 rm -rf ./in
 rm -rf ./out
+rm -rf ./out_*
 rm -rf ./tempcsv
 rm -rf ./cmd/tempcsv
 rm -rf ./build
