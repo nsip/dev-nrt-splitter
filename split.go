@@ -9,6 +9,7 @@ import (
 
 	csvtool "github.com/cdutwhu/csv-tool"
 	gio "github.com/digisan/gotk/io"
+	"github.com/digisan/gotk/slice/ts"
 	"github.com/gosuri/uiprogress"
 	"github.com/nsip/dev-nrt-splitter/config"
 )
@@ -34,6 +35,9 @@ func NrtSplit(configurations ...string) error {
 	if err != nil {
 		return err
 	}
+
+	// if Split-Schema is identical to Trim-Columns, Do NOT need to trim in each split outcome file
+	ignoreTrimInSplit := ts.Equal(cfg.Split.Schema, cfg.Trim.Columns)
 
 	// -- progress bar 1 -- //
 	if progbar {
@@ -82,12 +86,19 @@ func NrtSplit(configurations ...string) error {
 			}
 		}
 
-		// Splitting first
-		if cfg.Splitting.Enabled {
+		// Split first
+		if cfg.Split.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", fPath)
-			outFile := cfg.Splitting.OutFolder + tailPath
+			outFile := cfg.Split.OutFolder + tailPath
 			outFolder := outFile[:strings.LastIndex(outFile, "/")]
-			csvtool.Split(fPath, outFolder, false, cfg.Splitting.Schema...)
+			splitfiles, _ := csvtool.Split(fPath, outFolder, false, cfg.Split.Schema...)
+
+			//
+			if cfg.Trim.Enabled && !ignoreTrimInSplit {
+				for _, sf := range splitfiles {
+					csvtool.Query(sf, false, cfg.Trim.Columns, '&', nil, sf, nil)
+				}
+			}
 		}
 
 		if cfg.Trim.Enabled {

@@ -16,7 +16,7 @@ type ReportConfig struct {
 		Enabled   bool
 		OutFolder string
 	}
-	Splitting struct {
+	Split struct {
 		Enabled   bool
 		OutFolder string
 		Schema    []string
@@ -35,7 +35,7 @@ func GetConfig(configs ...string) *ReportConfig {
 		// Dir Process
 		cfg.InFolder = strings.TrimSuffix(cfg.InFolder, "/") + "/"
 		cfg.Trim.OutFolder = strings.TrimSuffix(cfg.Trim.OutFolder, "/") + "/"
-		cfg.Splitting.OutFolder = strings.TrimSuffix(cfg.Splitting.OutFolder, "/") + "/"
+		cfg.Split.OutFolder = strings.TrimSuffix(cfg.Split.OutFolder, "/") + "/"
 
 		return cfg
 	}

@@ -6,7 +6,7 @@ Columns = ["School", "YrLevel", "Domain"]
 Enabled = true
 OutFolder = "./out_trim/"
 
-[Splitting]
+[Split]
 Enabled = true
 OutFolder = "./out_split/"
-Schema = ["School", "YrLevel", "Domain"]
+Schema = ["School"]
