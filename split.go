@@ -8,9 +8,10 @@ import (
 	"sync/atomic"
 
 	csvtool "github.com/cdutwhu/csv-tool"
-	gio "github.com/digisan/gotk/io"
+	gotkio "github.com/digisan/gotk/io"
 	"github.com/digisan/gotk/slice/ts"
 	"github.com/gosuri/uiprogress"
+	"github.com/gosuri/uiprogress/util/strutil"
 	"github.com/nsip/dev-nrt-splitter/config"
 )
 
@@ -44,12 +45,15 @@ func NrtSplit(configurations ...string) error {
 		uip = uiprogress.New()
 		defer uip.Stop()
 		uip.Start()
-		cnt, _, err := gio.FileDirCount(inFolderAbs, cfg.WalkSubFolders)
+		cnt, _, err := gotkio.FileDirCount(inFolderAbs, cfg.WalkSubFolders)
 		if err != nil {
 			return err
 		}
 		bar = uip.AddBar(cnt)
 		bar.AppendCompleted().PrependElapsed()
+		bar.PrependFunc(func(b *uiprogress.Bar) string {
+			return strutil.Resize(" Trimming & Splitting...:", 35)
+		})
 	}
 
 	err = filepath.Walk(inFolderAbs, func(path string, info os.FileInfo, err error) error {
