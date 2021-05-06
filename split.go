@@ -94,7 +94,7 @@ func NrtSplit(configurations ...string) error {
 			splitfiles, _ := csvtool.Split(fPath, outFolder, false, cfg.Split.Schema...)
 
 			//
-			if cfg.Trim.Enabled && !ignoreTrimInSplit {
+			if cfg.TrimColAfterSplit && cfg.Trim.Enabled && !ignoreTrimInSplit {
 				for _, sf := range splitfiles {
 					csvtool.Query(sf, false, cfg.Trim.Columns, '&', nil, sf, nil)
 				}

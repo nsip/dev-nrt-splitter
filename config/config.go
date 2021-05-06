@@ -9,9 +9,10 @@ import (
 
 // Config :
 type ReportConfig struct {
-	InFolder       string
-	WalkSubFolders bool
-	Trim           struct {
+	InFolder          string
+	WalkSubFolders    bool
+	TrimColAfterSplit bool
+	Trim              struct {
 		Columns   []string
 		Enabled   bool
 		OutFolder string
