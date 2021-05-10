@@ -18,9 +18,11 @@ type ReportConfig struct {
 		OutFolder string
 	}
 	Split struct {
-		Enabled   bool
-		OutFolder string
-		Schema    []string
+		Enabled      bool
+		OutFolder    string
+		Schema       []string
+		IgnoreFolder string
+		StrictMode   bool
 	}
 }
 

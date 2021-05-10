@@ -9,5 +9,7 @@ OutFolder = "./out_trim/"
 
 [Split]
 Enabled = true
+IgnoreFolder = "./ignore/"
 OutFolder = "./out_split/"
 Schema = ["School", "YrLevel", "Domain"]
+StrictMode = true

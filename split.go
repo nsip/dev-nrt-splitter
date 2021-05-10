@@ -28,7 +28,6 @@ func EnableProgBar(enable bool) {
 
 // NrtSplit :
 func NrtSplit(configurations ...string) error {
-	defer os.RemoveAll("./tempcsv")
 
 	cfg := config.GetConfig(configurations...)
 	// fmt.Println(cfg.InFolder)
@@ -57,31 +56,31 @@ func NrtSplit(configurations ...string) error {
 	}
 
 	err = filepath.Walk(inFolderAbs, func(path string, info os.FileInfo, err error) error {
+
 		if err != nil {
 			log.Fatalf("Error [%v] at a path [%q], Check your config.toml [InFolder] \n", err, path)
 			return err
 		}
 
-		var (
-			fPath = path
-			fDir  = filepath.Dir(path) + "/"
-			// fName = info.Name()
-			fExt = filepath.Ext(path)
-		)
+		// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		// dir, err := filepath.Abs(os.Args[0])
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// fmt.Println(dir)
+		// fmt.Println(path)
 
-		//
-		fPath, err = filepath.Abs(fPath)
-		if err != nil {
-			return err
-		}
-		tailPath := fPath[len(inFolderAbs):]
+		var (
+			fExt     = filepath.Ext(path)
+			tailPath = path[len(inFolderAbs):]
+		)
 
 		if info.IsDir() || fExt != ".csv" {
 			return nil
 		}
 
 		if !cfg.WalkSubFolders {
-			fDirAbs, err := filepath.Abs(fDir)
+			fDirAbs, err := filepath.Abs(filepath.Dir(path))
 			if err != nil {
 				log.Fatalf("Error when walk through abs %s", inFolderAbs)
 			}
@@ -92,23 +91,28 @@ func NrtSplit(configurations ...string) error {
 
 		// Split first
 		if cfg.Split.Enabled {
-			// fmt.Printf("Split Processing...: %v\n", fPath)
-			outFile := cfg.Split.OutFolder + tailPath
-			outFolder := outFile[:strings.LastIndex(outFile, "/")]
-			splitfiles, _ := csvtool.Split(fPath, outFolder, false, cfg.Split.Schema...)
+			// fmt.Printf("Split Processing...: %v\n", path)
 
-			//
+			csvtool.StrictSchema(cfg.Split.StrictMode)
+			csvtool.Dir4NotSplittable(cfg.Split.IgnoreFolder)
+
+			outFile := filepath.Join(cfg.Split.OutFolder, tailPath)
+			outFolder := outFile[:strings.LastIndex(outFile, "/")]
+			splitfiles, _ := csvtool.Split(path, outFolder, false, cfg.Split.Schema...)
+
+			// trim columns also apply to split result if set
 			if cfg.TrimColAfterSplit && cfg.Trim.Enabled && !ignoreTrimInSplit {
 				for _, sf := range splitfiles {
-					csvtool.Query(sf, false, cfg.Trim.Columns, '&', nil, sf, nil)
+					csvtool.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
 				}
 			}
 		}
 
 		if cfg.Trim.Enabled {
-			// fmt.Printf("Trim Processing...: %v\n", fPath)
-			outFile := cfg.Trim.OutFolder + tailPath
-			csvtool.Query(fPath, false, cfg.Trim.Columns, '&', nil, outFile, nil)
+			// fmt.Printf("Trim Processing...: %v\n", path)
+
+			outFile := filepath.Join(cfg.Trim.OutFolder, tailPath)
+			csvtool.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
 		}
 
 		// -- progress bar 2 -- //
