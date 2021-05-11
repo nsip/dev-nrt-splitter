@@ -35,6 +35,7 @@ If running report_splitter without designating configuration file path, default 
 
 InFolder = "./in/"      # (string), in which folder splitter processes report csv files.
 WalkSubFolders = false  # (bool), if true, splitter process every file including the file in sub-folders; otherwise, ignores sub-folder files.
+TrimColAfterSplit = true # (bool), if true, also apply [Trim] Columns to the result of [Split]
 
 [Trim]
 Enabled = true                            # (bool), turn on/off Trim function.
@@ -44,7 +45,9 @@ OutFolder = "./out/"                      # (string), in which folder trimmed cs
 [Split]
 Enabled = true                            # (bool), turn on/off Split function.
 OutFolder = "./out/"                      # (string), in which folder split results should be output.
-Schema = ["School", "YrLevel", "Domain"]  # (string array), header sequence for splitting. Each header creates its split category folder. 
+Schema = ["School", "YrLevel", "Domain"]  # (string array), header sequence for splitting. Each header creates its split category folder.
+IgnoreFolder = "./ignore/"                # (string), If not empty string, dump unsplittable csv file into this folder. If empty, ignore unsplittable csv files.
+StrictMode = true                         # (bool), If true, splittable csv file must have all [Schema] headers. Otherwise, dump it into IgnoreFolder. If false, use partial, sequence [Schema] to do splitting, and IgnoreFolders are also into its own split result path.
 ```
 
 ## play with sample

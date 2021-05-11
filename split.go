@@ -62,14 +62,6 @@ func NrtSplit(configurations ...string) error {
 			return err
 		}
 
-		// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-		// dir, err := filepath.Abs(os.Args[0])
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// fmt.Println(dir)
-		// fmt.Println(path)
-
 		var (
 			fExt     = filepath.Ext(path)
 			tailPath = path[len(inFolderAbs):]
