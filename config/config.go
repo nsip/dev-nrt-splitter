@@ -22,7 +22,6 @@ type ReportConfig struct {
 		OutFolder    string
 		Schema       []string
 		IgnoreFolder string
-		StrictMode   bool
 	}
 }
 

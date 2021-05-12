@@ -1,6 +1,7 @@
 package splitter
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,9 +37,6 @@ func NrtSplit(configurations ...string) error {
 		return err
 	}
 
-	// if Split-Schema is identical to Trim-Columns, Do NOT need to trim in each split outcome file
-	ignoreTrimInSplit := ts.Equal(cfg.Split.Schema, cfg.Trim.Columns)
-
 	// -- progress bar 1 -- //
 	if progbar {
 		uip = uiprogress.New()
@@ -55,6 +53,8 @@ func NrtSplit(configurations ...string) error {
 		})
 	}
 
+	mFileEmptyCSV := make(map[string][]byte)
+
 	err = filepath.Walk(inFolderAbs, func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {
@@ -62,12 +62,7 @@ func NrtSplit(configurations ...string) error {
 			return err
 		}
 
-		var (
-			fExt     = filepath.Ext(path)
-			tailPath = path[len(inFolderAbs):]
-		)
-
-		if info.IsDir() || fExt != ".csv" {
+		if info.IsDir() || filepath.Ext(path) != ".csv" {
 			return nil
 		}
 
@@ -81,22 +76,47 @@ func NrtSplit(configurations ...string) error {
 			}
 		}
 
+		tailPath := path[len(inFolderAbs):]
+
 		// Split first
 		if cfg.Split.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", path)
 
-			csvtool.StrictSchema(cfg.Split.StrictMode)
+			// csvtool.ForceSingleProc(true)
+			csvtool.KeepCatHeaders(false)
+			csvtool.KeepIgnCatHeaders(true)
+			csvtool.StrictSchema(true)
 			csvtool.Dir4NotSplittable(cfg.Split.IgnoreFolder)
 
 			outFile := filepath.Join(cfg.Split.OutFolder, tailPath)
 			outFolder := outFile[:strings.LastIndex(outFile, "/")]
-			splitfiles, _ := csvtool.Split(path, outFolder, false, cfg.Split.Schema...)
+			splitfiles, ignoredfiles, _ := csvtool.Split(path, outFolder, cfg.Split.Schema...)
 
 			// trim columns also apply to split result if set
-			if cfg.TrimColAfterSplit && cfg.Trim.Enabled && !ignoreTrimInSplit {
+			if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
 				for _, sf := range splitfiles {
 					csvtool.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
 				}
+			}
+
+			// find valid schema, empty content file to spread
+			for _, ignf := range ignoredfiles {
+
+				hdrs, n, _ := csvtool.FileInfo(ignf)
+				if err != nil {
+					log.Printf("%v @ %s", err, ignf)
+					return err
+				}
+
+				if n == 0 && ts.Superset(hdrs, cfg.Split.Schema) {
+					emptycsv, err := os.ReadFile(ignf)
+					if err != nil {
+						log.Printf("%v @ %s", err, ignf)
+						return err
+					}
+					mFileEmptyCSV[filepath.Base(ignf)] = emptycsv
+				}
+
 			}
 		}
 
@@ -120,6 +140,13 @@ func NrtSplit(configurations ...string) error {
 	if err != nil {
 		log.Fatalf("error walking the path %q: %v\n", inFolderAbs, err)
 	}
+
+	fmt.Println(mFileEmptyCSV)
+	// if cfg.Split.Enabled {
+	// 	err = filepath.Walk(cfg.Split.OutFolder, func(path string, info os.FileInfo, err error) error {
+	// 		return nil
+	// 	})
+	// }
 
 	return err
 }
