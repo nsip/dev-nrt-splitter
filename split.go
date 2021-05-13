@@ -1,7 +1,8 @@
 package splitter
 
 import (
-	"fmt"
+	"bytes"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -114,7 +115,17 @@ func NrtSplit(configurations ...string) error {
 						log.Printf("%v @ %s", err, ignf)
 						return err
 					}
-					mFileEmptyCSV[filepath.Base(ignf)] = emptycsv
+
+					// Trim Columns if needed
+					rmHdrs := cfg.Split.Schema
+					if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
+						rmHdrs = ts.MkSet(append(rmHdrs, cfg.Trim.Columns...)...)
+					}
+					var buf bytes.Buffer
+					csvtool.Subset(emptycsv, false, rmHdrs, false, nil, io.Writer(&buf))
+					emptycsv = buf.Bytes()
+
+					mFileEmptyCSV[ignf] = emptycsv
 				}
 
 			}
@@ -141,12 +152,35 @@ func NrtSplit(configurations ...string) error {
 		log.Fatalf("error walking the path %q: %v\n", inFolderAbs, err)
 	}
 
-	fmt.Println(mFileEmptyCSV)
-	// if cfg.Split.Enabled {
-	// 	err = filepath.Walk(cfg.Split.OutFolder, func(path string, info os.FileInfo, err error) error {
-	// 		return nil
-	// 	})
-	// }
+	// spread all valid schema, empty csv to each split folder
+	mOutRecord := make(map[string]struct{})
+	if cfg.Split.Enabled {
+		err = filepath.Walk(cfg.Split.OutFolder, func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() || filepath.Ext(path) != ".csv" {
+				return nil
+			}
+			mOutRecord[filepath.Dir(path)] = struct{}{}
+			return nil
+		})
+		if err != nil {
+			log.Fatalf("error walking the path %q: %v\n", inFolderAbs, err)
+		}
+
+		nSchema := len(cfg.Split.Schema)
+		for outpath := range mOutRecord {
+			for emptypath, csv := range mFileEmptyCSV {
+				emptyroot := filepath.Base(filepath.Dir(emptypath))
+				emptyfile := filepath.Base(emptypath)
+				outdir := outpath
+				for i := 0; i < nSchema; i++ {
+					outdir = filepath.Dir(outdir)
+				}
+				if strings.HasSuffix(outdir, "/"+emptyroot) {
+					gotkio.MustWriteFile(filepath.Join(outpath, emptyfile), csv)
+				}
+			}
+		}
+	}
 
 	return err
 }
