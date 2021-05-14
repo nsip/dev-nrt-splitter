@@ -90,7 +90,7 @@ func NrtSplit(configurations ...string) error {
 			csvtool.Dir4NotSplittable(cfg.Split.IgnoreFolder)
 
 			outFile := filepath.Join(cfg.Split.OutFolder, tailPath)
-			outFolder := outFile[:strings.LastIndex(outFile, "/")]
+			outFolder := filepath.Dir(outFile)
 			splitfiles, ignoredfiles, _ := csvtool.Split(path, outFolder, cfg.Split.Schema...)
 
 			// trim columns also apply to split result if set
