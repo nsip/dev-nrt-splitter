@@ -2,7 +2,7 @@ package config
 
 import (
 	"log"
-	"strings"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
@@ -35,9 +35,10 @@ func GetConfig(configs ...string) *ReportConfig {
 		}
 
 		// Dir Process
-		cfg.InFolder = strings.TrimSuffix(cfg.InFolder, "/") + "/"
-		cfg.Trim.OutFolder = strings.TrimSuffix(cfg.Trim.OutFolder, "/") + "/"
-		cfg.Split.OutFolder = strings.TrimSuffix(cfg.Split.OutFolder, "/") + "/"
+		cfg.InFolder = filepath.Clean(cfg.InFolder)
+		cfg.Trim.OutFolder = filepath.Clean(cfg.Trim.OutFolder)
+		cfg.Split.OutFolder = filepath.Clean(cfg.Split.OutFolder)
+		cfg.Split.IgnoreFolder = filepath.Clean(cfg.Split.IgnoreFolder)
 
 		return cfg
 	}

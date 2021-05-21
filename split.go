@@ -32,6 +32,13 @@ func EnableProgBar(enable bool) {
 func NrtSplit(configurations ...string) error {
 
 	cfg := config.GetConfig(configurations...)
+
+	// if Trim & Split are both disabled, disable progress-bar anyway.
+	progbar = cfg.Trim.Enabled || cfg.Split.Enabled
+
+	const tempdir = "./tmp/"
+	os.RemoveAll(tempdir)
+
 	// fmt.Println(cfg.InFolder)
 	inFolderAbs, err := filepath.Abs(cfg.InFolder)
 	if err != nil {
@@ -134,7 +141,21 @@ func NrtSplit(configurations ...string) error {
 		if cfg.Trim.Enabled {
 			// fmt.Printf("Trim Processing...: %v\n", path)
 
-			outFile := filepath.Join(cfg.Trim.OutFolder, tailPath)
+			outFolder := cfg.Trim.OutFolder
+
+			// if trim output folder is identical to input folder, make a temp output, then overwrite the input
+			if cfg.Trim.OutFolder == cfg.InFolder {
+				outFolder = ""
+				for i, path := range filepath.SplitList(cfg.Trim.OutFolder) {
+					if i == 0 {
+						outFolder = filepath.Join(outFolder, tempdir)
+						continue
+					}
+					outFolder = filepath.Join(outFolder, path)
+				}
+			}
+
+			outFile := filepath.Join(outFolder, tailPath)
 			csvtool.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
 		}
 
@@ -146,10 +167,17 @@ func NrtSplit(configurations ...string) error {
 		}
 
 		return nil
-	})
+
+	}) // end of walk
 
 	if err != nil {
 		log.Fatalf("error walking the path %q: %v\n", inFolderAbs, err)
+	}
+
+	// if temp folder was created as Trim.OutFolder is the same as InFolder, use temp folder to replace input folder
+	if gotkio.DirExists(tempdir) {
+		os.RemoveAll(cfg.InFolder)
+		os.Rename(tempdir, filepath.SplitList(cfg.InFolder)[0])
 	}
 
 	// spread all valid schema, empty csv to each split folder
@@ -175,7 +203,7 @@ func NrtSplit(configurations ...string) error {
 				for i := 0; i < nSchema; i++ {
 					outdir = filepath.Dir(outdir)
 				}
-				if strings.HasSuffix(outdir, "/"+emptyroot) {
+				if strings.HasSuffix(outdir, "/"+emptyroot) || strings.HasSuffix(outdir, "\\"+emptyroot) {
 					gotkio.MustWriteFile(filepath.Join(outpath, emptyfile), csv)
 				}
 			}
