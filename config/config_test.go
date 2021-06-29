@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/BurntSushi/toml"
-	"github.com/cdutwhu/debog/fn"
+	lk "github.com/digisan/logkit"
 	"github.com/davecgh/go-spew/spew"
 )
 
 func TestConfig(t *testing.T) {
 	cfg := &ReportConfig{}
 	_, err := toml.DecodeFile("./config.toml", cfg)
-	fn.FailOnErr("%v", err)
+	lk.FailOnErr("%v", err)
 	fmt.Println("-------------------------------")
 	spew.Dump(cfg)
 }

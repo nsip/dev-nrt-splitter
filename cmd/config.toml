@@ -1,0 +1,14 @@
+InFolder = "../data/"
+TrimColAfterSplit = true
+WalkSubFolders = true
+
+[Trim]
+Columns = ["School", "YrLevel", "Domain"]
+Enabled = true
+OutFolder = "./out_trim/"
+
+[Split]
+Enabled = true
+IgnoreFolder = "./ignore/"
+OutFolder = "./out_split/"
+Schema = ["School", "YrLevel", "Domain"]

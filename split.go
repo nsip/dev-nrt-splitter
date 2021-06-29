@@ -9,7 +9,8 @@ import (
 	"strings"
 	"sync/atomic"
 
-	csvtool "github.com/cdutwhu/csv-tool"
+	ct "github.com/cdutwhu/csv-tool"
+	fd "github.com/digisan/gotk/filedir"
 	gotkio "github.com/digisan/gotk/io"
 	"github.com/digisan/gotk/slice/ts"
 	"github.com/gosuri/uiprogress"
@@ -50,11 +51,11 @@ func NrtSplit(configurations ...string) error {
 		uip = uiprogress.New()
 		defer uip.Stop()
 		uip.Start()
-		cnt, _, err := gotkio.FileDirCount(inFolderAbs, cfg.WalkSubFolders)
+		files, _, err := fd.WalkFileDir(inFolderAbs, cfg.WalkSubFolders)
 		if err != nil {
 			return err
 		}
-		bar = uip.AddBar(cnt)
+		bar = uip.AddBar(len(files))
 		bar.AppendCompleted().PrependElapsed()
 		bar.PrependFunc(func(b *uiprogress.Bar) string {
 			return strutil.Resize(" Trimming & Splitting...:", 35)
@@ -90,27 +91,27 @@ func NrtSplit(configurations ...string) error {
 		if cfg.Split.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", path)
 
-			// csvtool.ForceSingleProc(true)
-			csvtool.KeepCatHeaders(false)
-			csvtool.KeepIgnCatHeaders(true)
-			csvtool.StrictSchema(true)
-			csvtool.Dir4NotSplittable(cfg.Split.IgnoreFolder)
+			// ct.ForceSingleProc(true)
+			ct.KeepCatHeaders(false)
+			ct.KeepIgnCatHeaders(true)
+			ct.StrictSchema(true)
+			ct.Dir4NotSplittable(cfg.Split.IgnoreFolder)
 
 			outFile := filepath.Join(cfg.Split.OutFolder, tailPath)
 			outFolder := filepath.Dir(outFile)
-			splitfiles, ignoredfiles, _ := csvtool.Split(path, outFolder, cfg.Split.Schema...)
+			splitfiles, ignoredfiles, _ := ct.Split(path, outFolder, cfg.Split.Schema...)
 
 			// trim columns also apply to split result if set
 			if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
 				for _, sf := range splitfiles {
-					csvtool.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
+					ct.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
 				}
 			}
 
 			// find valid schema, empty content file to spread
 			for _, ignf := range ignoredfiles {
 
-				hdrs, n, _ := csvtool.FileInfo(ignf)
+				hdrs, n, _ := ct.FileInfo(ignf)
 				if err != nil {
 					log.Printf("%v @ %s", err, ignf)
 					return err
@@ -129,7 +130,7 @@ func NrtSplit(configurations ...string) error {
 						rmHdrs = ts.MkSet(append(rmHdrs, cfg.Trim.Columns...)...)
 					}
 					var buf bytes.Buffer
-					csvtool.Subset(emptycsv, false, rmHdrs, false, nil, io.Writer(&buf))
+					ct.Subset(emptycsv, false, rmHdrs, false, nil, io.Writer(&buf))
 					emptycsv = buf.Bytes()
 
 					mFileEmptyCSV[ignf] = emptycsv
@@ -156,7 +157,7 @@ func NrtSplit(configurations ...string) error {
 			}
 
 			outFile := filepath.Join(outFolder, tailPath)
-			csvtool.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
+			ct.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
 		}
 
 		// -- progress bar 2 -- //
@@ -175,7 +176,7 @@ func NrtSplit(configurations ...string) error {
 	}
 
 	// if temp folder was created as Trim.OutFolder is the same as InFolder, use temp folder to replace input folder
-	if gotkio.DirExists(tempdir) {
+	if fd.DirExists(tempdir) {
 		os.RemoveAll(cfg.InFolder)
 		os.Rename(tempdir, filepath.SplitList(cfg.InFolder)[0])
 	}
@@ -184,7 +185,7 @@ func NrtSplit(configurations ...string) error {
 	mOutRecord := make(map[string]struct{})
 	if cfg.Split.Enabled {
 		err = filepath.Walk(cfg.Split.OutFolder, func(path string, info os.FileInfo, err error) error {
-			if info.IsDir() || filepath.Ext(path) != ".csv" {
+			if filepath.Ext(path) != ".csv" || info.IsDir() {
 				return nil
 			}
 			mOutRecord[filepath.Dir(path)] = struct{}{}
