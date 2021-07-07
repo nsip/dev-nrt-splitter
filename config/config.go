@@ -23,6 +23,11 @@ type ReportConfig struct {
 		Schema       []string
 		IgnoreFolder string
 	}
+	Merge []struct {
+		Enabled    bool
+		MergedName string
+		Schema     []string
+	}
 }
 
 // GetConfig :

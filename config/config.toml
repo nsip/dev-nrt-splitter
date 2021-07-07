@@ -12,3 +12,13 @@ Enabled = true
 IgnoreFolder = "./ignore/"
 OutFolder = "./out_split/"
 Schema = ["School", "YrLevel", "Domain"]
+
+[[Merge]]
+Enabled = true
+MergedName = "GrammarAndPunctuation"
+Schema = ["GrammarAndPunctuation", "Grammar And Punctuation", "GRAMMARANDPUNCTUATION"]
+
+[[Merge]]
+Enabled = true
+MergedName = "Grammar"
+Schema = ["Grammar", "GRAMMAR"]

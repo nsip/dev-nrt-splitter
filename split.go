@@ -181,7 +181,7 @@ func NrtSplit(configurations ...string) error {
 		os.Rename(tempdir, filepath.SplitList(cfg.InFolder)[0])
 	}
 
-	// spread all valid schema, empty csv to each split folder
+	// spread all valid schema & empty csv to each split folder
 	mOutRecord := make(map[string]struct{})
 	if cfg.Split.Enabled {
 		err = filepath.Walk(cfg.Split.OutFolder, func(path string, info os.FileInfo, err error) error {
@@ -208,6 +208,58 @@ func NrtSplit(configurations ...string) error {
 					gotkio.MustWriteFile(filepath.Join(outpath, emptyfile), csv)
 				}
 			}
+		}
+	}
+
+	watched := []string{}
+	mDirBase := make(map[string][]string)
+
+	for i, m := range cfg.Merge {
+		cfg.Merge[i].Schema = ts.MkSet(append(m.Schema, m.MergedName)...)
+		watched = ts.Union(watched, cfg.Merge[i].Schema)
+	}
+	watched = ts.MkSet(watched...)
+
+	_, dirs, err := fd.WalkFileDir(cfg.Split.OutFolder, true)
+	if err != nil {
+		log.Fatalf("error walking FileDir %q: %v\n", cfg.Split.OutFolder, err)
+	}
+
+	for _, dir := range dirs {
+		base := filepath.Base(dir)
+		dir1 := filepath.Dir(dir)
+		if ts.In(base, watched...) {
+			mDirBase[dir1] = append(mDirBase[dir1], base)
+		}
+	}
+
+	onConflict := func(existing []byte, incoming []byte) (overwrite bool, overwriteData []byte) {
+		iLF := bytes.Index(incoming, []byte{'\n'})
+		return true, append(existing, incoming[iLF:]...)
+	}
+
+	for dir1, folders := range mDirBase {
+		for _, folder := range folders {
+			dir := filepath.Join(dir1, folder)
+			for _, m := range cfg.Merge {
+				if m.Enabled {
+					temp := filepath.Join(dir1, m.MergedName+"#")
+					// merged := filepath.Join(dir1, m.MergedName)
+					for _, s := range m.Schema {
+						if s == folder {
+							// fmt.Println(dir, "=>", merged)
+							fd.MergeDir(temp, true, onConflict, dir)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	_, dirs, err = fd.WalkFileDir(cfg.Split.OutFolder, true)
+	for _, dir := range dirs {
+		if strings.HasSuffix(dir, "#") {
+			os.Rename(dir, dir[:len(dir)-1])
 		}
 	}
 

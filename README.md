@@ -47,6 +47,11 @@ Enabled = true                            # (bool), turn on/off Split function.
 OutFolder = "./out/"                      # (string), in which folder split results should be output.
 Schema = ["School", "YrLevel", "Domain"]  # (string array), header sequence for splitting. Each header creates its split category folder.
 IgnoreFolder = "./ignore/"                # (string), If not empty string, dump unsplittable csv file into this folder. If empty, ignore unsplittable csv files.
+
+[[Merge]]
+Enabled = true                                                   # (bool), turn on/off Merge function.
+MergedName = "GrammarAndPunctuation"                             # (string), the name of merged folder.
+Schema = ["GrammarAndPunctuation", "Grammar And Punctuation"]    # (string array), under same parent directory, those folders merge into 'MergedName' folder. 
 ```
 
 ## play with sample
