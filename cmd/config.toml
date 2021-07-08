@@ -1,4 +1,4 @@
-InFolder = "./data/"
+InFolder = "../data/"
 TrimColAfterSplit = true
 WalkSubFolders = true
 

@@ -9,7 +9,8 @@ import (
 	"strings"
 	"sync/atomic"
 
-	csvtool "github.com/cdutwhu/csv-tool"
+	ct "github.com/cdutwhu/csv-tool"
+	fd "github.com/digisan/gotk/filedir"
 	gotkio "github.com/digisan/gotk/io"
 	"github.com/digisan/gotk/slice/ts"
 	"github.com/gosuri/uiprogress"
@@ -50,11 +51,11 @@ func NrtSplit(configurations ...string) error {
 		uip = uiprogress.New()
 		defer uip.Stop()
 		uip.Start()
-		cnt, _, err := gotkio.FileDirCount(inFolderAbs, cfg.WalkSubFolders)
+		files, _, err := fd.WalkFileDir(inFolderAbs, cfg.WalkSubFolders)
 		if err != nil {
 			return err
 		}
-		bar = uip.AddBar(cnt)
+		bar = uip.AddBar(len(files))
 		bar.AppendCompleted().PrependElapsed()
 		bar.PrependFunc(func(b *uiprogress.Bar) string {
 			return strutil.Resize(" Trimming & Splitting...:", 35)
@@ -90,27 +91,27 @@ func NrtSplit(configurations ...string) error {
 		if cfg.Split.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", path)
 
-			// csvtool.ForceSingleProc(true)
-			csvtool.KeepCatHeaders(false)
-			csvtool.KeepIgnCatHeaders(true)
-			csvtool.StrictSchema(true)
-			csvtool.Dir4NotSplittable(cfg.Split.IgnoreFolder)
+			// ct.ForceSingleProc(true)
+			ct.KeepCatHeaders(false)
+			ct.KeepIgnCatHeaders(true)
+			ct.StrictSchema(true)
+			ct.Dir4NotSplittable(cfg.Split.IgnoreFolder)
 
 			outFile := filepath.Join(cfg.Split.OutFolder, tailPath)
 			outFolder := filepath.Dir(outFile)
-			splitfiles, ignoredfiles, _ := csvtool.Split(path, outFolder, cfg.Split.Schema...)
+			splitfiles, ignoredfiles, _ := ct.Split(path, outFolder, cfg.Split.Schema...)
 
 			// trim columns also apply to split result if set
 			if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
 				for _, sf := range splitfiles {
-					csvtool.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
+					ct.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
 				}
 			}
 
 			// find valid schema, empty content file to spread
 			for _, ignf := range ignoredfiles {
 
-				hdrs, n, _ := csvtool.FileInfo(ignf)
+				hdrs, n, _ := ct.FileInfo(ignf)
 				if err != nil {
 					log.Printf("%v @ %s", err, ignf)
 					return err
@@ -129,7 +130,7 @@ func NrtSplit(configurations ...string) error {
 						rmHdrs = ts.MkSet(append(rmHdrs, cfg.Trim.Columns...)...)
 					}
 					var buf bytes.Buffer
-					csvtool.Subset(emptycsv, false, rmHdrs, false, nil, io.Writer(&buf))
+					ct.Subset(emptycsv, false, rmHdrs, false, nil, io.Writer(&buf))
 					emptycsv = buf.Bytes()
 
 					mFileEmptyCSV[ignf] = emptycsv
@@ -156,7 +157,7 @@ func NrtSplit(configurations ...string) error {
 			}
 
 			outFile := filepath.Join(outFolder, tailPath)
-			csvtool.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
+			ct.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
 		}
 
 		// -- progress bar 2 -- //
@@ -175,16 +176,16 @@ func NrtSplit(configurations ...string) error {
 	}
 
 	// if temp folder was created as Trim.OutFolder is the same as InFolder, use temp folder to replace input folder
-	if gotkio.DirExists(tempdir) {
+	if fd.DirExists(tempdir) {
 		os.RemoveAll(cfg.InFolder)
 		os.Rename(tempdir, filepath.SplitList(cfg.InFolder)[0])
 	}
 
-	// spread all valid schema, empty csv to each split folder
+	// spread all valid schema & empty csv to each split folder
 	mOutRecord := make(map[string]struct{})
 	if cfg.Split.Enabled {
 		err = filepath.Walk(cfg.Split.OutFolder, func(path string, info os.FileInfo, err error) error {
-			if info.IsDir() || filepath.Ext(path) != ".csv" {
+			if filepath.Ext(path) != ".csv" || info.IsDir() {
 				return nil
 			}
 			mOutRecord[filepath.Dir(path)] = struct{}{}
@@ -207,6 +208,58 @@ func NrtSplit(configurations ...string) error {
 					gotkio.MustWriteFile(filepath.Join(outpath, emptyfile), csv)
 				}
 			}
+		}
+	}
+
+	watched := []string{}
+	mDirBase := make(map[string][]string)
+
+	for i, m := range cfg.Merge {
+		cfg.Merge[i].Schema = ts.MkSet(append(m.Schema, m.MergedName)...)
+		watched = ts.Union(watched, cfg.Merge[i].Schema)
+	}
+	watched = ts.MkSet(watched...)
+
+	_, dirs, err := fd.WalkFileDir(cfg.Split.OutFolder, true)
+	if err != nil {
+		log.Fatalf("error walking FileDir %q: %v\n", cfg.Split.OutFolder, err)
+	}
+
+	for _, dir := range dirs {
+		base := filepath.Base(dir)
+		dir1 := filepath.Dir(dir)
+		if ts.In(base, watched...) {
+			mDirBase[dir1] = append(mDirBase[dir1], base)
+		}
+	}
+
+	onConflict := func(existing []byte, incoming []byte) (overwrite bool, overwriteData []byte) {
+		iLF := bytes.Index(incoming, []byte{'\n'})
+		return true, append(existing, incoming[iLF:]...)
+	}
+
+	for dir1, folders := range mDirBase {
+		for _, folder := range folders {
+			dir := filepath.Join(dir1, folder)
+			for _, m := range cfg.Merge {
+				if m.Enabled {
+					temp := filepath.Join(dir1, m.MergedName+"#")
+					// merged := filepath.Join(dir1, m.MergedName)
+					for _, s := range m.Schema {
+						if s == folder {
+							// fmt.Println(dir, "=>", merged)
+							fd.MergeDir(temp, true, onConflict, dir)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	_, dirs, err = fd.WalkFileDir(cfg.Split.OutFolder, true)
+	for _, dir := range dirs {
+		if strings.HasSuffix(dir, "#") {
+			os.Rename(dir, dir[:len(dir)-1])
 		}
 	}
 

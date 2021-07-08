@@ -7,6 +7,8 @@ rm -rf ./tempcsv
 rm -rf ./cmd/tempcsv
 rm -rf ./build
 rm -rf ./data/system_reports
+rm -rf ./cmd/out_*
+rm -rf ./cmd/ignore
 
 # delete all binary files
 find . -type f -executable -exec sh -c "file -i '{}' | grep -q 'x-executable; charset=binary'" \; -print | xargs rm -f
