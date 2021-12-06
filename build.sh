@@ -13,4 +13,4 @@ ORIPATH=`pwd`
 cd ./cmd && ./build.sh 
 cd "$ORIPATH"
 
-echo "${G}NRT_SPLITTER BUILDING DONE${W}"
+echo "${G}NRT_SPLITTER BUILT${W}"

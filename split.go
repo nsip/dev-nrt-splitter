@@ -12,7 +12,7 @@ import (
 	ct "github.com/cdutwhu/csv-tool"
 	fd "github.com/digisan/gotk/filedir"
 	gotkio "github.com/digisan/gotk/io"
-	"github.com/digisan/gotk/slice/ts"
+	"github.com/digisan/gotk/generics/ts"
 	"github.com/gosuri/uiprogress"
 	"github.com/gosuri/uiprogress/util/strutil"
 	"github.com/nsip/dev-nrt-splitter/config"
