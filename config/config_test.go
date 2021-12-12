@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/BurntSushi/toml"
-	lk "github.com/digisan/logkit"
 	"github.com/davecgh/go-spew/spew"
+	lk "github.com/digisan/logkit"
 )
 
 func TestConfig(t *testing.T) {
