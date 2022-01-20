@@ -3,10 +3,10 @@ module github.com/nsip/dev-nrt-splitter
 go 1.17
 
 require (
-	github.com/BurntSushi/toml v0.4.1
-	github.com/cdutwhu/csv-tool v0.1.13
-	github.com/digisan/go-generics v0.0.3
-	github.com/digisan/gotk v0.0.45
+	github.com/BurntSushi/toml v1.0.0
+	github.com/digisan/csv-tool v0.0.1
+	github.com/digisan/go-generics v0.0.10
+	github.com/digisan/gotk v0.0.47
 	github.com/gosuri/uiprogress v0.0.1
 )
 
@@ -23,5 +23,5 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/sjson v1.2.4 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
-	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 )

@@ -9,10 +9,12 @@ import (
 	"strings"
 	"sync/atomic"
 
-	ct "github.com/cdutwhu/csv-tool"
-	fd "github.com/digisan/gotk/filedir"
-	gotkio "github.com/digisan/gotk/io"
+	ct "github.com/digisan/csv-tool"
+	qry "github.com/digisan/csv-tool/query"
+	spl "github.com/digisan/csv-tool/split"
 	"github.com/digisan/go-generics/str"
+	fd "github.com/digisan/gotk/filedir"
+	gio "github.com/digisan/gotk/io"
 	"github.com/gosuri/uiprogress"
 	"github.com/gosuri/uiprogress/util/strutil"
 	"github.com/nsip/dev-nrt-splitter/config"
@@ -91,51 +93,49 @@ func NrtSplit(configurations ...string) error {
 		if cfg.Split.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", path)
 
-			// ct.ForceSingleProc(true)
-			ct.KeepCatHeaders(false)
-			ct.KeepIgnCatHeaders(true)
-			ct.StrictSchema(true)
-			ct.Dir4NotSplittable(cfg.Split.IgnoreFolder)
+			// spl.ForceSglProc(true)
+			spl.KeepSchemaHeaders(false)
+			spl.KeepIgnSchemaHeaders(true)
+			spl.StrictSchema(true, cfg.Split.IgnoreFolder)
 
 			outFile := filepath.Join(cfg.Split.OutFolder, tailPath)
 			outFolder := filepath.Dir(outFile)
-			splitfiles, ignoredfiles, _ := ct.Split(path, outFolder, cfg.Split.Schema...)
+			splitfiles, ignoredfiles, _ := spl.Split(path, outFolder, cfg.Split.Schema...)
 
 			// trim columns also apply to split result if set
 			if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
 				for _, sf := range splitfiles {
-					ct.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
+					qry.QueryFile(sf, false, cfg.Trim.Columns, '&', nil, sf)
 				}
 			}
 
 			// find valid schema, empty content file to spread
-			for _, ignf := range ignoredfiles {
+			for _, ign := range ignoredfiles {
 
-				hdrs, n, _ := ct.FileInfo(ignf)
+				hdr, n, _ := ct.FileInfo(ign)
 				if err != nil {
-					log.Printf("%v @ %s", err, ignf)
+					log.Printf("%v @ %s", err, ign)
 					return err
 				}
 
-				if n == 0 && str.Superset(hdrs, cfg.Split.Schema) {
-					emptycsv, err := os.ReadFile(ignf)
+				if n == 0 && str.Superset(hdr, cfg.Split.Schema) {
+					emptycsv, err := os.ReadFile(ign)
 					if err != nil {
-						log.Printf("%v @ %s", err, ignf)
+						log.Printf("%v @ %s", err, ign)
 						return err
 					}
 
 					// Trim Columns if needed
-					rmHdrs := cfg.Split.Schema
+					rmHdr := cfg.Split.Schema
 					if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
-						rmHdrs = str.MkSet(append(rmHdrs, cfg.Trim.Columns...)...)
+						rmHdr = str.MkSet(append(rmHdr, cfg.Trim.Columns...)...)
 					}
 					var buf bytes.Buffer
-					ct.Subset(emptycsv, false, rmHdrs, false, nil, io.Writer(&buf))
+					qry.Subset(emptycsv, false, rmHdr, false, nil, io.Writer(&buf))
 					emptycsv = buf.Bytes()
 
-					mFileEmptyCSV[ignf] = emptycsv
+					mFileEmptyCSV[ign] = emptycsv
 				}
-
 			}
 		}
 
@@ -157,7 +157,7 @@ func NrtSplit(configurations ...string) error {
 			}
 
 			outFile := filepath.Join(outFolder, tailPath)
-			ct.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
+			qry.QueryFile(path, false, cfg.Trim.Columns, '&', nil, outFile)
 		}
 
 		// -- progress bar 2 -- //
@@ -205,7 +205,7 @@ func NrtSplit(configurations ...string) error {
 					outdir = filepath.Dir(outdir)
 				}
 				if strings.HasSuffix(outdir, "/"+emptyroot) || strings.HasSuffix(outdir, "\\"+emptyroot) {
-					gotkio.MustWriteFile(filepath.Join(outpath, emptyfile), csv)
+					gio.MustWriteFile(filepath.Join(outpath, emptyfile), csv)
 				}
 			}
 		}

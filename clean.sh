@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 rm -rf ./in
 rm -rf ./out
 rm -rf ./out_*
