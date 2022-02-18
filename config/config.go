@@ -22,6 +22,7 @@ type ReportConfig struct {
 		OutFolder    string
 		Schema       []string
 		IgnoreFolder string
+		Split2       bool
 	}
 	Merge []struct {
 		Enabled    bool

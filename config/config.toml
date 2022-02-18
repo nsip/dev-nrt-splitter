@@ -12,6 +12,7 @@ Enabled = true
 IgnoreFolder = "./ignore/"
 OutFolder = "./out_split/"
 Schema = ["School", "YrLevel", "Domain"]
+Split2 = false
 
 [[Merge]]
 Enabled = true

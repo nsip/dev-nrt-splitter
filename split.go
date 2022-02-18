@@ -12,6 +12,7 @@ import (
 	ct "github.com/digisan/csv-tool"
 	qry "github.com/digisan/csv-tool/query"
 	spl "github.com/digisan/csv-tool/split"
+	spl2 "github.com/digisan/csv-tool/split2"
 	"github.com/digisan/go-generics/str"
 	fd "github.com/digisan/gotk/filedir"
 	gio "github.com/digisan/gotk/io"
@@ -93,14 +94,25 @@ func NrtSplit(configurations ...string) error {
 		if cfg.Split.Enabled {
 			// fmt.Printf("Split Processing...: %v\n", path)
 
-			// spl.ForceSglProc(true)
-			spl.KeepSchemaHeaders(false)
-			spl.KeepIgnSchemaHeaders(true)
-			spl.StrictSchema(true, cfg.Split.IgnoreFolder)
+			if cfg.Split.Split2 {
+				spl2.RmSchemaCol(true)
+				spl2.RmSchemaColInIgn(false)
+				spl2.StrictSchema(true, cfg.Split.IgnoreFolder)
+			} else {
+				// spl.ForceSglProc(true)
+				spl.RmSchemaCol(true)
+				spl.RmSchemaColInIgn(false)
+				spl.StrictSchema(true, cfg.Split.IgnoreFolder)
+			}
 
 			outFile := filepath.Join(cfg.Split.OutFolder, tailPath)
 			outFolder := filepath.Dir(outFile)
-			splitfiles, ignoredfiles, _ := spl.Split(path, outFolder, cfg.Split.Schema...)
+			var splitfiles, ignoredfiles []string
+			if cfg.Split.Split2 {
+				splitfiles, ignoredfiles, _ = spl2.Split(path, outFolder, cfg.Split.Schema...)
+			} else {
+				splitfiles, ignoredfiles, _ = spl.Split(path, outFolder, cfg.Split.Schema...)
+			}
 
 			// trim columns also apply to split result if set
 			if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
