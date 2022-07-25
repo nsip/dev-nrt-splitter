@@ -13,7 +13,7 @@ import (
 	qry "github.com/digisan/csv-tool/query"
 	spl "github.com/digisan/csv-tool/split"
 	spl2 "github.com/digisan/csv-tool/split2"
-	"github.com/digisan/go-generics/str"
+	. "github.com/digisan/go-generics/v2"
 	fd "github.com/digisan/gotk/filedir"
 	gio "github.com/digisan/gotk/io"
 	"github.com/gosuri/uiprogress"
@@ -130,7 +130,7 @@ func NrtSplit(configurations ...string) error {
 					return err
 				}
 
-				if n == 0 && str.Superset(hdr, cfg.Split.Schema) {
+				if n == 0 && IsSuper(hdr, cfg.Split.Schema) {
 					emptycsv, err := os.ReadFile(ign)
 					if err != nil {
 						log.Printf("%v @ %s", err, ign)
@@ -140,7 +140,7 @@ func NrtSplit(configurations ...string) error {
 					// Trim Columns if needed
 					rmHdr := cfg.Split.Schema
 					if cfg.Trim.Enabled && cfg.TrimColAfterSplit {
-						rmHdr = str.MkSet(append(rmHdr, cfg.Trim.Columns...)...)
+						rmHdr = Settify(append(rmHdr, cfg.Trim.Columns...)...)
 					}
 					var buf bytes.Buffer
 					qry.Subset(emptycsv, false, rmHdr, false, nil, io.Writer(&buf))
@@ -227,10 +227,10 @@ func NrtSplit(configurations ...string) error {
 	mDirBase := make(map[string][]string)
 
 	for i, m := range cfg.Merge {
-		cfg.Merge[i].Schema = str.MkSet(append(m.Schema, m.MergedName)...)
-		watched = str.Union(watched, cfg.Merge[i].Schema)
+		cfg.Merge[i].Schema = Settify(append(m.Schema, m.MergedName)...)
+		watched = Union(watched, cfg.Merge[i].Schema)
 	}
-	watched = str.MkSet(watched...)
+	watched = Settify(watched...)
 
 	_, dirs, err := fd.WalkFileDir(cfg.Split.OutFolder, true)
 	if err != nil {
@@ -240,7 +240,7 @@ func NrtSplit(configurations ...string) error {
 	for _, dir := range dirs {
 		base := filepath.Base(dir)
 		dir1 := filepath.Dir(dir)
-		if str.In(base, watched...) {
+		if In(base, watched...) {
 			mDirBase[dir1] = append(mDirBase[dir1], base)
 		}
 	}
