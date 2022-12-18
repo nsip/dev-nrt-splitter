@@ -20,19 +20,19 @@ OUTPATH=$BUILDDIR/linux64/
 mkdir -p $OUTPATH
 CGO_ENABLED=0 GOOS="linux" GOARCH="$GOARCH" go build -ldflags="$LDFLAGS" -o $OUT
 mv $OUT $OUTPATH
-cp ../config/config.toml $OUTPATH'config.toml'
+cp ../config.toml $OUTPATH'config.toml'
 echo "${G}${OUT}(linux64) built${W}"
 
 OUTPATH=$BUILDDIR/win64/
 mkdir -p $OUTPATH
 CGO_ENABLED=0 GOOS="windows" GOARCH="$GOARCH" go build -ldflags="$LDFLAGS" -o $OUT.exe
 mv $OUT.exe $OUTPATH
-cp ../config/config.toml $OUTPATH'config.toml'
+cp ../config.toml $OUTPATH'config.toml'
 echo "${G}${OUT}(win64) built${W}"
 
 OUTPATH=$BUILDDIR/mac/
 mkdir -p $OUTPATH
 CGO_ENABLED=0 GOOS="darwin" GOARCH="$GOARCH" go build -ldflags="$LDFLAGS" -o $OUT
 mv $OUT $OUTPATH
-cp ../config/config.toml $OUTPATH'config.toml'
+cp ../config.toml $OUTPATH'config.toml'
 echo "${G}${OUT}(mac) built${W}"

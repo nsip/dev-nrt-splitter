@@ -1,21 +1,17 @@
 package main
 
 import (
-	"log"
 	"os"
 
+	lk "github.com/digisan/logkit"
 	splitter "github.com/nsip/dev-nrt-splitter"
 )
 
 func main() {
-
 	configurations := []string{}
 	if len(os.Args) > 1 {
 		configurations = append(configurations, os.Args[1:]...)
 	}
 	configurations = append(configurations, "./config.toml")
-	if err := splitter.NrtSplit(configurations...); err != nil {
-		log.Fatalln(err)
-	}
-
+	lk.WarnOnErr("%v", splitter.NrtSplit(configurations...))
 }

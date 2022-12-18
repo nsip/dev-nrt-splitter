@@ -15,3 +15,9 @@
 # vendor/
 
 build/
+
+cmd/out*
+cmd/cmd
+cmd/ignore*
+
+data/system_reports
