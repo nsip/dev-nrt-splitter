@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/digisan/csv-tool v0.1.9
 	github.com/digisan/go-config v0.1.5
-	github.com/digisan/go-generics v0.2.17
+	github.com/digisan/go-generics v0.3.5
 	github.com/digisan/gotk v0.2.12
 	github.com/digisan/logkit v0.1.4
 	github.com/gosuri/uiprogress v0.0.1

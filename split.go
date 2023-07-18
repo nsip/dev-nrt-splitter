@@ -260,21 +260,17 @@ func NrtSplit(configurations ...string) (err error) {
 		}
 	}
 
-	_, dirs4Split, err = fd.WalkFileDir(out4Split, true)
-	if err != nil {
-		if !enableSplit {
-			if _, err = os.Stat(out4Split); os.IsNotExist(err) {
-				err = nil
-			}
+	err = nil
+	if enableSplit {
+		_, dirs4Split, err = fd.WalkFileDir(out4Split, true)
+		if err != nil {
+			return err
 		}
-	}
-	if err != nil {
-		return err
-	}
 
-	for _, dir := range dirs4Split {
-		if strings.HasSuffix(dir, "#") {
-			os.Rename(dir, dir[:len(dir)-1])
+		for _, dir := range dirs4Split {
+			if strings.HasSuffix(dir, "#") {
+				os.Rename(dir, dir[:len(dir)-1])
+			}
 		}
 	}
 

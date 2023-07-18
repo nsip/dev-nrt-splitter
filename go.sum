@@ -9,8 +9,8 @@ github.com/digisan/fileflatter v0.0.3 h1:uP1iTU1Bu06/NLQPhiqMe9ju+vypMqfltK2qyzB
 github.com/digisan/fileflatter v0.0.3/go.mod h1:7xv/2C0aEsUI5K1+61WhmNOoKbyACIX0jF3i1aHFYtw=
 github.com/digisan/go-config v0.1.5 h1:b3KmSXhF+8evk1avYjUniJAfqngm4gW2qxv9MnoV6AQ=
 github.com/digisan/go-config v0.1.5/go.mod h1:S9bvRIl0woeuGS+Xk7CNUA6as+xOTUPyZhgH5JwsmMs=
-github.com/digisan/go-generics v0.2.17 h1:u4YZn8isb6tnJ15KCTRlbWvhYU9ZYB2wJCHyJi17Lhs=
-github.com/digisan/go-generics v0.2.17/go.mod h1:HoHbkpjEgiw3YQ3QaADIfeFt/kpdODb0qerSbs0PSBA=
+github.com/digisan/go-generics v0.3.5 h1:MqMxG1OnnAbwBtkeKFzu3teBqb9BkhnLRyiW2OLZz28=
+github.com/digisan/go-generics v0.3.5/go.mod h1:VL55aCSjSaDHPbLtQyGg5fFFwG9SSHiAO/Zke/Tkhcg=
 github.com/digisan/gotk v0.2.12 h1:kv8eN7K5v6Bk50tlfTAI7lo4fRfY8CSWHxu3n8DxODE=
 github.com/digisan/gotk v0.2.12/go.mod h1:gkkH06zN+BLeWcjbRnSQvJd1+An5zk4KNrP5Jmtr0HU=
 github.com/digisan/logkit v0.1.4 h1:kbs7nl7AqMou5IFm/RG68/HrxRsbu5G2Zfrvmev+CqQ=
