@@ -1,6 +1,6 @@
 module github.com/nsip/dev-nrt-splitter
 
-go 1.19
+go 1.20
 
 require (
 	github.com/digisan/csv-tool v0.2.5

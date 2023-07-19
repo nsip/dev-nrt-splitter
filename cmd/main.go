@@ -8,10 +8,10 @@ import (
 )
 
 func main() {
-	configurations := []string{}
+	config := []string{}
 	if len(os.Args) > 1 {
-		configurations = append(configurations, os.Args[1:]...)
+		config = append(config, os.Args[1:]...)
 	}
-	configurations = append(configurations, "./config.toml")
-	lk.WarnOnErr("%v", splitter.NrtSplit(configurations...))
+	config = append(config, "./config.toml")
+	lk.WarnOnErr("%v", splitter.NrtSplit(config...))
 }

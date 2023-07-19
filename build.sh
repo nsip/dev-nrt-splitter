@@ -11,6 +11,14 @@ W=`tput sgr0`
 ORIPATH=`pwd`
 
 cd ./cmd && ./build.sh 
+echo "${G}NRT_SPLITTER BUILT${W}"
+
 cd "$ORIPATH"
 
-echo "${G}NRT_SPLITTER BUILT${W}"
+cp -rf ./data ./build
+cd ./build/data
+unzip -q system_reports.zip 
+rm system_reports.zip
+echo "${Y}test reports are now in the /build/data${Y}"
+
+cd "$ORIPATH"

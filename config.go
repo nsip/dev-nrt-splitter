@@ -44,7 +44,7 @@ func setConfig(fConfigs ...string) {
 	out4Trim = cfg.Path("Trim.OutFolder")
 
 	enableSplit = cfg.Bool("Split.Enabled")
-	bySplit2 = cfg.Bool("Split.Split2")
+	bySplit2 = cfg.Bool("Split.SplitVer2")
 	ignoreFolder4Split = cfg.Path("Split.IgnoreFolder")
 	out4Split = cfg.Path("Split.OutFolder")
 	splitSchema = cfg.Strs("Split.Schema")
