@@ -14,7 +14,6 @@ import (
 	spl2 "github.com/digisan/csv-tool/split2"
 	. "github.com/digisan/go-generics/v2"
 	fd "github.com/digisan/gotk/file-dir"
-	gio "github.com/digisan/gotk/file-dir"
 	lk "github.com/digisan/logkit"
 	"github.com/gosuri/uiprogress"
 	"github.com/gosuri/uiprogress/util/strutil"
@@ -202,7 +201,7 @@ func NrtSplit(configurations ...string) (err error) {
 					outDir = filepath.Dir(outDir)
 				}
 				if strings.HasSuffix(outDir, "/"+emptyRoot) || strings.HasSuffix(outDir, "\\"+emptyRoot) {
-					gio.MustWriteFile(filepath.Join(outPath, emptyFile), csv)
+					fd.MustWriteFile(filepath.Join(outPath, emptyFile), csv)
 				}
 			}
 		}
