@@ -57,18 +57,18 @@ func NrtSplit(configurations ...string) (err error) {
 
 	mFileEmptyCSV := make(map[string][]byte)
 
-	err = filepath.Walk(inFolderAbs, func(fpath string, info os.FileInfo, err error) error {
+	err = filepath.Walk(inFolderAbs, func(fPath string, info os.FileInfo, err error) error {
 
-		lk.FailOnErr("error [%v] at a path [%q], Check your config.toml [InFolder] \n", err, fpath)
+		lk.FailOnErr("error [%v] at a path [%q], check your config.toml [InFolder] \n", err, fPath)
 
 		// only process csv file
-		if info.IsDir() || filepath.Ext(fpath) != ".csv" {
+		if info.IsDir() || filepath.Ext(fPath) != ".csv" {
 			return nil
 		}
 
 		// if NOT goSubFolder, if jump into deeper, then return
 		if !goSubFolder {
-			fDirAbs, err := filepath.Abs(filepath.Dir(fpath))
+			fDirAbs, err := filepath.Abs(filepath.Dir(fPath))
 			lk.FailOnErr("Error when walk through abs %s, @%v", inFolderAbs, err)
 			if inFolderAbs != fDirAbs {
 				return nil
@@ -76,7 +76,7 @@ func NrtSplit(configurations ...string) (err error) {
 		}
 
 		// trim inFolder Path for each file path, only keep 'filename.csv' or '/sub/filename.csv'
-		tailPath := fpath[len(inFolderAbs):]
+		tailPath := fPath[len(inFolderAbs):]
 
 		// Split first
 		if enableSplit {
@@ -98,11 +98,11 @@ func NrtSplit(configurations ...string) (err error) {
 			outFolder := filepath.Dir(outFile)            // output file's folder
 
 			// do split
-			var fpathsSplit, fpathsIgnore []string
+			var fPathsSplit, fPathsIgnore []string
 			if bySplit2 {
-				fpathsSplit, fpathsIgnore, err = spl2.Split(fpath, outFolder, splitSchema...)
+				fPathsSplit, fPathsIgnore, err = spl2.Split(fPath, outFolder, splitSchema...)
 			} else {
-				fpathsSplit, fpathsIgnore, err = spl.Split(fpath, outFolder, splitSchema...)
+				fPathsSplit, fPathsIgnore, err = spl.Split(fPath, outFolder, splitSchema...)
 			}
 			if err != nil {
 				return err
@@ -110,24 +110,26 @@ func NrtSplit(configurations ...string) (err error) {
 
 			// trim columns also apply to split result if set
 			if enableTrim && trimColAfterSplit {
-				for _, fpath := range fpathsSplit {
-					qry.QueryFile(fpath, false, trimCols, '&', nil, fpath)
+				for _, fPath := range fPathsSplit {
+					if ok, err := ct.FileHeaderHasAny(fPath, trimCols...); err == nil && ok {
+						qry.QueryFile(fPath, false, trimCols, '&', nil, fPath)
+					}
 				}
 			}
 
 			// find schema is valid, but empty content file to spread in future
-			for _, fpath := range fpathsIgnore {
+			for _, fPath := range fPathsIgnore {
 
-				hdr, n, err := ct.FileInfo(fpath)
+				hdr, n, err := ct.FileInfo(fPath)
 				if err != nil {
-					lk.Warn("%v @ %s", err, fpath)
+					lk.Warn("%v @ %s", err, fPath)
 					return err
 				}
 
 				if n == 0 && IsSuper(hdr, splitSchema) {
-					emptyCsv, err := os.ReadFile(fpath)
+					emptyCsv, err := os.ReadFile(fPath)
 					if err != nil {
-						lk.Warn("%v @ %s", err, fpath)
+						lk.Warn("%v @ %s", err, fPath)
 						return err
 					}
 
@@ -140,7 +142,7 @@ func NrtSplit(configurations ...string) (err error) {
 					qry.Subset(emptyCsv, false, rmHdr, false, nil, io.Writer(&buf))
 					emptyCsv = buf.Bytes()
 
-					mFileEmptyCSV[fpath] = emptyCsv
+					mFileEmptyCSV[fPath] = emptyCsv
 				}
 			}
 		}
@@ -148,15 +150,15 @@ func NrtSplit(configurations ...string) (err error) {
 		if enableTrim {
 			// fmt.Printf("Trim Processing...: %v\n", path)
 
-			outFolder := out4Trim
-
-			// if trim output folder is identical to original input folder, make a temp output, then overwrite the input
-			if out4Trim == inFolder {
-				outFolder = tempDir
+			if ok, err := ct.FileHeaderHasAny(fPath, trimCols...); err == nil && ok {
+				outFolder := out4Trim
+				// if trim output folder is identical to original input folder, make a temp output, then overwrite the input
+				if out4Trim == inFolder {
+					outFolder = tempDir
+				}
+				outFile := filepath.Join(outFolder, tailPath)
+				qry.QueryFile(fPath, false, trimCols, '&', nil, outFile)
 			}
-
-			outFile := filepath.Join(outFolder, tailPath)
-			qry.QueryFile(fpath, false, trimCols, '&', nil, outFile)
 		}
 
 		// -- progress bar 2 -- //
@@ -214,7 +216,7 @@ func NrtSplit(configurations ...string) (err error) {
 	}
 	watched = Settify(watched...)
 
-	_, dirs4Split, err := fd.WalkFileDir(out4Split, true)
+	_, dirs4split, err := fd.WalkFileDir(out4Split, true)
 	if err != nil {
 		if !enableSplit {
 			if _, err = os.Stat(out4Split); os.IsNotExist(err) {
@@ -227,7 +229,7 @@ func NrtSplit(configurations ...string) (err error) {
 	}
 
 	mDirBase := make(map[string][]string)
-	for _, dir := range dirs4Split {
+	for _, dir := range dirs4split {
 		base := filepath.Base(dir)
 		dir1 := filepath.Dir(dir)
 		if In(base, watched...) {
@@ -261,12 +263,12 @@ func NrtSplit(configurations ...string) (err error) {
 
 	err = nil
 	if enableSplit {
-		_, dirs4Split, err = fd.WalkFileDir(out4Split, true)
+		_, dirs4split, err = fd.WalkFileDir(out4Split, true)
 		if err != nil {
 			return err
 		}
 
-		for _, dir := range dirs4Split {
+		for _, dir := range dirs4split {
 			if strings.HasSuffix(dir, "#") {
 				os.Rename(dir, dir[:len(dir)-1])
 			}

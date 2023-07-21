@@ -3,18 +3,18 @@ module github.com/nsip/dev-nrt-splitter
 go 1.20
 
 require (
-	github.com/digisan/csv-tool v0.2.5
-	github.com/digisan/go-config v0.2.6
-	github.com/digisan/go-generics v0.3.5
-	github.com/digisan/gotk v0.3.8
-	github.com/digisan/logkit v0.2.5
+	github.com/digisan/csv-tool v0.2.7
+	github.com/digisan/go-config v0.2.7
+	github.com/digisan/go-generics v0.3.6
+	github.com/digisan/gotk v0.3.9
+	github.com/digisan/logkit v0.2.6
 	github.com/gosuri/uiprogress v0.0.1
 )
 
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
-	github.com/digisan/fileflatter v0.0.14 // indirect
-	github.com/gookit/color v1.5.3 // indirect
+	github.com/digisan/fileflatter v0.0.15 // indirect
+	github.com/gookit/color v1.5.4 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
