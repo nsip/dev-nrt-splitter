@@ -3,6 +3,7 @@ package splitter
 import (
 	"bytes"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	spl2 "github.com/digisan/csv-tool/split2"
 	. "github.com/digisan/go-generics/v2"
 	fd "github.com/digisan/gotk/file-dir"
+	"github.com/digisan/gotk/strs"
 	lk "github.com/digisan/logkit"
 	"github.com/gosuri/uiprogress"
 	"github.com/gosuri/uiprogress/util/strutil"
@@ -32,8 +34,8 @@ func NrtSplit(configurations ...string) (err error) {
 	// by default, if Trim & Split are both disabled, disable progress-bar anyway.
 	EnableProgBar(enableTrim || enableSplit)
 
-	// prepare a temporary dir
-	const tempDir = "./tmp/"
+	// prepare a temporary dir for trim & split
+	const tempDir = "./ts_tmp/"
 	if err = os.RemoveAll(tempDir); err != nil {
 		return err
 	}
@@ -176,8 +178,41 @@ func NrtSplit(configurations ...string) (err error) {
 
 	// if temp folder was created as Trim.OutFolder is the same as InFolder, use temp folder to replace input folder
 	if fd.DirExists(tempDir) {
-		os.RemoveAll(inFolder)
-		os.Rename(tempDir, inFolder)
+
+		// copy each file to inFolder, then delete tempDir
+		err := filepath.WalkDir(tempDir, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			srcF, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer srcF.Close()
+
+			subPath := strs.TrimHeadToFirst(path, tempDir)
+			dst := filepath.Join(inFolder, subPath)
+			dstF, err := os.Create(dst)
+			if err != nil {
+				return err
+			}
+			defer dstF.Close()
+
+			if _, err := io.Copy(dstF, srcF); err != nil {
+				return err
+			}
+
+			return nil
+		})
+
+		if err == nil {
+			lk.WarnOnErr("%v", os.RemoveAll(tempDir))
+		}
+
+		// cause files missing issue !!!
+		// os.RemoveAll(inFolder)
+		// os.Rename(tempDir, inFolder)
 	}
 
 	// spread all valid schema & empty csv to each split folder
