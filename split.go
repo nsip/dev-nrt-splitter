@@ -184,22 +184,31 @@ func NrtSplit(configurations ...string) (err error) {
 			if err != nil {
 				return err
 			}
+			if d.IsDir() {
+				return nil
+			}
 
 			srcF, err := os.Open(path)
 			if err != nil {
+				lk.Warn("%v (%v)", err, path)
 				return err
 			}
 			defer srcF.Close()
 
-			subPath := strs.TrimHeadToFirst(path, tempDir)
+			subPath := strs.TrimHeadToFirst(path, filepath.Clean(tempDir))
+			// lk.Log("%v -- %v -- %v", path, tempDir, subPath)
 			dst := filepath.Join(inFolder, subPath)
+			// lk.Log("%v", dst)
+
 			dstF, err := os.Create(dst)
 			if err != nil {
+				lk.Warn("%v (%v)", err, dst)
 				return err
 			}
 			defer dstF.Close()
 
 			if _, err := io.Copy(dstF, srcF); err != nil {
+				lk.Warn("%v (%v) (%v)", err, path, dst)
 				return err
 			}
 
@@ -207,6 +216,7 @@ func NrtSplit(configurations ...string) (err error) {
 		})
 
 		if err == nil {
+			lk.Log("removing temp dir [%v]", tempDir)
 			lk.WarnOnErr("%v", os.RemoveAll(tempDir))
 		}
 
