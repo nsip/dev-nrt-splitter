@@ -1,7 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"io/fs"
+	"path/filepath"
 	"testing"
+
+	"github.com/digisan/gotk/strs"
 )
 
 func Test_main(t *testing.T) {
@@ -20,7 +25,6 @@ func Test_main(t *testing.T) {
 	}
 }
 
-/*
 func TestWalk(t *testing.T) {
 	filepath.WalkDir("../", func(path string, d fs.DirEntry, err error) error {
 		fmt.Printf("%v\n", path)
@@ -32,4 +36,3 @@ func TestWalk(t *testing.T) {
 		return nil
 	})
 }
-*/

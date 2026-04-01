@@ -9,16 +9,16 @@ import (
 	"strings"
 	"sync/atomic"
 
-	. "github.com/digisan/go-generics"
+	ct "github.com/digisan/csv-tool"
+	qry "github.com/digisan/csv-tool/query"
+	spl "github.com/digisan/csv-tool/split"
+	spl2 "github.com/digisan/csv-tool/split2"
+	. "github.com/digisan/go-generics/v2"
 	fd "github.com/digisan/gotk/file-dir"
 	"github.com/digisan/gotk/strs"
 	lk "github.com/digisan/logkit"
 	"github.com/gosuri/uiprogress"
 	"github.com/gosuri/uiprogress/util/strutil"
-	ct "github.com/nsip/csv-tool"
-	qry "github.com/nsip/csv-tool/query"
-	spl "github.com/nsip/csv-tool/split"
-	spl2 "github.com/nsip/csv-tool/split2"
 )
 
 func EnableProgBar(enable bool) {
@@ -107,25 +107,14 @@ func NrtSplit(configurations ...string) (err error) {
 				fPathsSplit, fPathsIgnore, err = spl.Split(fPath, outFolder, splitSchema...)
 			}
 			if err != nil {
-				// A split error on one file must not abort the whole run; warn and move on.
-				lk.WarnOnErr("split failed for [%s]: %v — skipping to next file", fPath, err)
-				return nil
+				return err
 			}
 
 			// trim columns also apply to split result if set
 			if enableTrim && trimColAfterSplit {
-				for _, splitPath := range fPathsSplit {
-					if ok, trimCheckErr := ct.FileHeaderHasAny(splitPath, trimCols...); trimCheckErr == nil && ok {
-						// Write trim output to a temp path; replace original only on success.
-						// This prevents a QueryFile error from leaving the split file empty.
-						tmpPath := splitPath + ".trim_tmp"
-						if trimErr := qry.QueryFile(splitPath, false, trimCols, '&', nil, tmpPath); trimErr != nil {
-							lk.WarnOnErr("trim-after-split failed for [%s]: %v — leaving file untrimmed", splitPath, trimErr)
-							os.Remove(tmpPath) // remove any empty/partial temp, leave original intact
-						} else if renameErr := os.Rename(tmpPath, splitPath); renameErr != nil {
-							lk.WarnOnErr("could not replace trimmed split file [%s]: %v — leaving file untrimmed", splitPath, renameErr)
-							os.Remove(tmpPath)
-						}
+				for _, fPath := range fPathsSplit {
+					if ok, err := ct.FileHeaderHasAny(fPath, trimCols...); err == nil && ok {
+						qry.QueryFile(fPath, false, trimCols, '&', nil, fPath)
 					}
 				}
 			}
@@ -161,47 +150,16 @@ func NrtSplit(configurations ...string) (err error) {
 		}
 
 		if enableTrim {
-			lk.Log("Trim Processing: %v", fPath)
+			// fmt.Printf("Trim Processing...: %v\n", path)
 
-			if ok, trimCheckErr := ct.FileHeaderHasAny(fPath, trimCols...); trimCheckErr == nil && ok {
+			if ok, err := ct.FileHeaderHasAny(fPath, trimCols...); err == nil && ok {
 				outFolder := out4Trim
 				// if trim output folder is identical to original input folder, make a temp output, then overwrite the input
 				if out4Trim == inFolder {
 					outFolder = tempDir
 				}
 				outFile := filepath.Join(outFolder, tailPath)
-
-				// pre-truncate to prevent stale tail content on re-runs
-				// (QueryFile in digisan/csv-tool opens without O_TRUNC)
-				if fd.FileExists(outFile) {
-					if truncErr := os.Truncate(outFile, 0); truncErr != nil {
-						lk.WarnOnErr("could not truncate existing trim output [%s]: %v", outFile, truncErr)
-					}
-				}
-
-				if trimErr := qry.QueryFile(fPath, false, trimCols, '&', nil, outFile); trimErr != nil {
-					lk.WarnOnErr("trim failed for [%s]: %v — copying untrimmed file to output as fallback", fPath, trimErr)
-					fd.MustCreateDir(filepath.Dir(outFile))
-					func() {
-						srcF, openErr := os.Open(fPath)
-						if openErr != nil {
-							lk.WarnOnErr("fallback: could not open source [%s]: %v", fPath, openErr)
-							return
-						}
-						defer srcF.Close()
-						dstF, createErr := os.Create(outFile)
-						if createErr != nil {
-							lk.WarnOnErr("fallback: could not create output [%s]: %v", outFile, createErr)
-							return
-						}
-						defer dstF.Close()
-						if _, copyErr := io.Copy(dstF, srcF); copyErr != nil {
-							lk.WarnOnErr("fallback: copy failed [%s] -> [%s]: %v", fPath, outFile, copyErr)
-						}
-					}()
-				} else {
-					lk.Log("Done Trim Processing: %v", fPath)
-				}
+				qry.QueryFile(fPath, false, trimCols, '&', nil, outFile)
 			}
 		}
 
