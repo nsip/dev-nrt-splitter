@@ -2,23 +2,24 @@ module github.com/nsip/dev-nrt-splitter
 
 go 1.23.0
 
+toolchain go1.23.1
+
 require (
-	github.com/digisan/csv-tool v0.2.7
-	github.com/digisan/go-config v0.2.7
-	github.com/digisan/go-generics v0.3.6
-	github.com/digisan/gotk v0.3.9
-	github.com/digisan/logkit v0.2.6
+	github.com/digisan/go-config v0.3.6
+	github.com/digisan/go-generics v0.5.4
+	github.com/digisan/gotk v0.5.9
+	github.com/digisan/logkit v0.3.8
 	github.com/gosuri/uiprogress v0.0.1
+	github.com/nsip/csv-tool v0.4.3
 )
 
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
-	github.com/digisan/fileflatter v0.0.15 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/tidwall/gjson v1.14.4 // indirect
+	github.com/tidwall/gjson v1.17.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect

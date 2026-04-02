@@ -1,15 +1,19 @@
 package splitter
 
 import (
+	"path/filepath"
+
 	cfg "github.com/digisan/go-config"
 	"github.com/gosuri/uiprogress"
 )
 
 var (
-	uip      *uiprogress.Progress
-	bar      *uiprogress.Bar
-	procSize uint64
-	progBar  = true
+	uip         *uiprogress.Progress
+	bar         *uiprogress.Bar
+	procSize    uint64
+	currentFile string
+	spinnerIdx  int
+	progBar     = true
 
 	enableTrim         bool
 	enableSplit        bool
@@ -34,20 +38,20 @@ func setConfig(fConfigs ...string) {
 
 	cfg.Init("config", false, fConfigs...)
 
-	inFolder = cfg.Path("InFolder")
-	inFolderAbs = cfg.PathAbs("InFolder")
-	goSubFolder = cfg.Bool("WalkSubFolders")
-	trimColAfterSplit = cfg.Bool("TrimColAfterSplit")
+	inFolder = cfg.Val[string]("InFolder")
+	inFolderAbs, _ = filepath.Abs(cfg.Val[string]("InFolder"))
+	goSubFolder = cfg.Val[bool]("WalkSubFolders")
+	trimColAfterSplit = cfg.Val[bool]("TrimColAfterSplit")
 
-	enableTrim = cfg.Bool("Trim.Enabled")
-	trimCols = cfg.Strs("Trim.Columns")
-	out4Trim = cfg.Path("Trim.OutFolder")
+	enableTrim = cfg.Val[bool]("Trim.Enabled")
+	trimCols = cfg.ValArr[string]("Trim.Columns")
+	out4Trim = cfg.Val[string]("Trim.OutFolder")
 
-	enableSplit = cfg.Bool("Split.Enabled")
-	bySplit2 = cfg.Bool("Split.SplitVer2")
-	ignoreFolder4Split = cfg.Path("Split.IgnoreFolder")
-	out4Split = cfg.Path("Split.OutFolder")
-	splitSchema = cfg.Strs("Split.Schema")
+	enableSplit = cfg.Val[bool]("Split.Enabled")
+	bySplit2 = cfg.Val[bool]("Split.SplitVer2")
+	ignoreFolder4Split = cfg.Val[string]("Split.IgnoreFolder")
+	out4Split = cfg.Val[string]("Split.OutFolder")
+	splitSchema = cfg.ValArr[string]("Split.Schema")
 
 	merges = cfg.Objects("Merge")
 }

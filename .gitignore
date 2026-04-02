@@ -21,3 +21,6 @@ cmd/cmd
 cmd/ignore*
 
 data/system_reports
+# Runtime output and logs
+fatal/
+writing_extract.csv
