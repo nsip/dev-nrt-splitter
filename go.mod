@@ -10,7 +10,7 @@ require (
 	github.com/digisan/gotk v0.5.9
 	github.com/digisan/logkit v0.3.8
 	github.com/gosuri/uiprogress v0.0.1
-	github.com/nsip/csv-tool v0.4.1
+	github.com/nsip/csv-tool v0.4.2
 )
 
 require (
