@@ -7,7 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync/atomic"
+
+	"time"
 
 	. "github.com/digisan/go-generics"
 	fd "github.com/digisan/gotk/file-dir"
@@ -50,10 +51,22 @@ func NrtSplit(configurations ...string) (err error) {
 			lk.WarnOnErr("%v", err)
 			return err
 		}
+		// Spinner goroutine: animates a rotating character in the bar label so the
+		// display keeps moving even while a single large file is being processed.
+		go func() {
+			for {
+				time.Sleep(150 * time.Millisecond)
+				spinnerIdx++
+			}
+		}()
 		bar = uip.AddBar(len(files))
 		bar.AppendCompleted().PrependElapsed()
 		bar.PrependFunc(func(b *uiprogress.Bar) string {
 			return strutil.Resize(" Trimming & Splitting...:", 35)
+		})
+		bar.AppendFunc(func(b *uiprogress.Bar) string {
+			frames := []string{"|", "/", "-", "\\"}
+			return " " + frames[spinnerIdx%4] + " " + strutil.Resize(currentFile, 38)
 		})
 	}
 
@@ -75,6 +88,11 @@ func NrtSplit(configurations ...string) (err error) {
 			if inFolderAbs != fDirAbs {
 				return nil
 			}
+		}
+
+		// update progress bar label with the file currently being processed
+		if progBar {
+			currentFile = filepath.Base(fPath)
 		}
 
 		// trim inFolder Path for each file path, only keep 'filename.csv' or '/sub/filename.csv'
@@ -207,8 +225,6 @@ func NrtSplit(configurations ...string) (err error) {
 
 		// -- progress bar 2 -- //
 		if progBar {
-			atomic.AddUint64(&procSize, 1)
-			bar.Set(int(procSize))
 			bar.Incr()
 		}
 

@@ -8,10 +8,12 @@ import (
 )
 
 var (
-	uip      *uiprogress.Progress
-	bar      *uiprogress.Bar
-	procSize uint64
-	progBar  = true
+	uip         *uiprogress.Progress
+	bar         *uiprogress.Bar
+	procSize    uint64
+	currentFile string
+	spinnerIdx  int
+	progBar     = true
 
 	enableTrim         bool
 	enableSplit        bool
