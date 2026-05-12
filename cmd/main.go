@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	lk "github.com/digisan/logkit"
+	lk "github.com/nsip/logkit"
 	splitter "github.com/nsip/dev-nrt-splitter"
 )
 

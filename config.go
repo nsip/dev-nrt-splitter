@@ -3,7 +3,7 @@ package splitter
 import (
 	"path/filepath"
 
-	cfg "github.com/digisan/go-config"
+	cfg "github.com/nsip/go-config"
 	"github.com/gosuri/uiprogress"
 )
 
