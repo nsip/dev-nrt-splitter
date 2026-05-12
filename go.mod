@@ -5,12 +5,12 @@ go 1.23.0
 toolchain go1.23.1
 
 require (
-	github.com/digisan/go-config v0.3.6
-	github.com/digisan/go-generics v0.5.4
-	github.com/digisan/gotk v0.5.9
-	github.com/digisan/logkit v0.3.8
 	github.com/gosuri/uiprogress v0.0.1
-	github.com/nsip/csv-tool v0.4.3
+	github.com/nsip/csv-tool v0.4.4
+	github.com/nsip/go-config v0.4.0
+	github.com/nsip/go-generics v0.6.0
+	github.com/nsip/gotk v0.6.0
+	github.com/nsip/logkit v0.4.0
 )
 
 require (

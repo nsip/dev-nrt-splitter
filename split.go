@@ -10,10 +10,10 @@ import (
 
 	"time"
 
-	. "github.com/digisan/go-generics"
-	fd "github.com/digisan/gotk/file-dir"
-	"github.com/digisan/gotk/strs"
-	lk "github.com/digisan/logkit"
+	. "github.com/nsip/go-generics"
+	fd "github.com/nsip/gotk/file-dir"
+	"github.com/nsip/gotk/strs"
+	lk "github.com/nsip/logkit"
 	"github.com/gosuri/uiprogress"
 	"github.com/gosuri/uiprogress/util/strutil"
 	ct "github.com/nsip/csv-tool"
