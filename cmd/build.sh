@@ -32,7 +32,10 @@ echo "${G}${OUT}(win64) built${W}"
 
 OUTPATH=$BUILDDIR/mac/
 mkdir -p $OUTPATH
-CGO_ENABLED=0 GOOS="darwin" GOARCH="$GOARCH" go build -ldflags="$LDFLAGS" -o $OUT
+# Build natively for Apple Silicon (arm64) so the binary runs at full M1 speed
+# rather than through Rosetta 2 emulation.  The linux64 and win64 targets above
+# are unaffected; they continue to use GOARCH=amd64.
+CGO_ENABLED=0 GOOS="darwin" GOARCH="arm64" go build -ldflags="$LDFLAGS" -o $OUT
 mv $OUT $OUTPATH
 cp ../config.toml $OUTPATH'config.toml'
-echo "${G}${OUT}(mac) built${W}"
+echo "${G}${OUT}(mac/arm64) built${W}"
